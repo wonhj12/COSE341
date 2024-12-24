@@ -1,141 +1,39 @@
-# Team Project Proposal COSE341: Operating Systems
-## Distributed Cafe Order Processing System
+# Final Project Proposal COSE341: Operating Systems
 
-### Team Name: CafeOS
+## Distributed Cafe Order Processing System Using Operating System Concepts
 
-### Team Members:
-1. [Student ID] [Name] (Team Leader)
-2. [Student ID] [Name]
-3. [Student ID] [Name]
-4. [Student ID] [Name]
+### Team Name: [Team Name]
+- [Student ID] [Name] (Team Leader)
+- [Student ID] [Name]
+- [Student ID] [Name]
+- [Student ID] [Name]
 
-### Problem Statement & Project Overview
-In university cafes, long wait times during peak hours and inefficient order processing create significant challenges for both staff and customers. This project aims to develop an efficient order processing system utilizing core Operating System concepts (Process Management, Synchronization, Memory Management, and Distributed Systems). Our goal is to enhance cafe operations through real-time order processing, resource optimization, and distributed processing.
+### Introduction
+The purpose of this project is to develop a cafe order processing system that implements core operating system concepts to ensure efficient order management. This project aims to create a system that handles multiple orders concurrently while efficiently managing shared resources through the application of OS principles such as process management, synchronization, and resource allocation.
 
 ### Implementation Plan
+The system will be developed using Python and will consist of two main components: the order processing system and the user interface. The order processing system will utilize Python's threading library for concurrent processing, while the user interface will be implemented using Streamlit for smooth interaction. Additionally, a shared memory system will be implemented to manage order states and resource allocation.
 
-#### Core Operating System Concepts
+STEP 1: When a barista inputs a new order, the system creates a new process thread and assigns appropriate resources (coffee machines).
 
-1. **Process Management**
-   - Concurrent order processing through multithreading
-   - Process scheduling for efficient task allocation
-   - Priority-based order handling
-   - Inter-process communication for status updates
+STEP 2: The system manages multiple orders concurrently using process scheduling and synchronization mechanisms.
 
-2. **Process Synchronization**
-   - Semaphore implementation for resource access control
+STEP 3: Shared resources (coffee machines, order data) are managed using semaphores and mutex locks to prevent conflicts.
+
+STEP 4: The system updates order status and resource allocation in real-time through the shared memory system.
+
+### Core OS Concepts Application
+1. Process Management
+   - Multi-threading for concurrent order processing
+   - Priority-based scheduling for order management
+
+2. Process Synchronization
+   - Semaphores for coffee machine access control
    - Mutex locks for shared data protection
-   - Deadlock prevention mechanisms
-   - Race condition handling in order processing
 
-3. **Memory Management**
-   - Shared memory for order data management
-   - Cache implementation for menu information
-   - Memory leak prevention system
-   - Virtual memory concepts for large-scale operations
-
-4. **Distributed Systems**
-   - Real-time synchronization between multiple locations
-   - Load balancing for order distribution
-   - Fault detection and recovery mechanisms
-   - Distributed data consistency management
-
-### Technical Implementation
-
-#### Phase 1: Core System Development (Week 1-2)
-1. **Backend Infrastructure**
-   - Python/Flask server implementation
-   - SQLite database integration
-   - WebSocket for real-time communications
-   - Basic security mechanisms
-
-2. **Process Management**
-   - Multithreading system setup
-   - Resource allocation algorithms
-   - Queue management implementation
-
-#### Phase 2: Distribution & Synchronization (Week 2-3)
-1. **Distributed System Setup**
-   - Inter-branch communication protocols
-   - Load balancing implementation
-   - Error handling and recovery systems
-
-2. **Security Implementation**
-   - JWT-based authentication
-   - Role-based access control
-   - Data encryption
-
-#### Phase 3: Frontend & Integration (Week 3-4)
-1. **User Interface Development**
-   - Streamlit-based dashboard
-   - Real-time order monitoring
-   - Admin control panel
-
-2. **Testing & Optimization**
-   - Performance testing
-   - Security testing
-   - System optimization
-
-### Project Originality
-1. **Real-world Application of OS Concepts**
-   - Practical implementation of theoretical concepts
-   - Integration of multiple OS principles
-   - Scalable system architecture
-
-2. **Advanced Features**
-   - Real-time load monitoring and adjustment
-   - Intelligent priority system
-   - Distributed processing capabilities
-   - Automated resource management
-
-### Expected Outcomes
-1. **Performance Improvements**
-   - 50% reduction in order processing time
-   - 30% increase in system resource utilization
-   - Enhanced concurrent order processing capability
-
-2. **System Reliability**
-   - 99.9% system availability
-   - Guaranteed data integrity
-   - Efficient error handling and recovery
-
-3. **Scalability**
-   - Easy integration of new locations
-   - Automatic scaling during peak hours
-   - Flexible feature addition
-
-### Technical Stack
-1. **Backend**
-   - Language: Python
-   - Framework: Flask
-   - Database: SQLite
-   - Multithreading libraries
-
-2. **Frontend**
-   - Framework: Streamlit
-   - Real-time data visualization
-   - Responsive interface design
-
-3. **Distributed System**
-   - Socket programming
-   - Load balancer implementation
-   - Fault tolerance mechanisms
-
-### Evaluation Criteria
-1. **System Performance**
-   - Response time
-   - Resource utilization
-   - Concurrency handling
-
-2. **Implementation Quality**
-   - Code organization
-   - Documentation
-   - Error handling
-
-3. **OS Concept Application**
-   - Effective use of OS principles
-   - Integration of multiple concepts
-   - Problem-solving approach
+3. Memory Management
+   - Shared memory for order status tracking
+   - Resource allocation management
 
 ### Conclusion
-Our distributed cafe order processing system represents a practical application of core Operating System concepts in solving real-world problems. By implementing process management, synchronization, memory management, and distributed systems principles, we aim to create an efficient and scalable solution that can significantly improve cafe operations. The project not only demonstrates theoretical understanding but also provides practical value through its implementation.
+The proposed cafe order processing system addresses the challenges of managing multiple orders and resources in a busy cafe environment by applying operating system concepts. We believe this system will represent a significant step toward achieving efficient and scalable order processing in food service environments.
