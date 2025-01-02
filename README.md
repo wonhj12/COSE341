@@ -4,10 +4,10 @@
 
 ### Team OSBucks
 
-- 2020320018 Won Hajin (Team Leader)
-- 2019320128 KIM, JinSeo
-- 2021320073 LEE, Il Seob
-- 2022350021 KIM, Hyun Kyoung
+- 2020320018 Won, Ha Jin (Team Leader)
+- 2019320128 Kim, Jin Seo
+- 2021320073 Lee, Il Seob
+- 2022350021 Kim, Hyeon Gyeong
 
 ### Introduction
 
