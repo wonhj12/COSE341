@@ -13,45 +13,60 @@ processing_times = {
 
 # Thread-safe order queue
 order_queue = queue.Queue()
-lock = Lock()
+order_lock = Lock()
 
-# Worker thread function
-def process_orders():
+# Number of worker threads
+NUM_WORKERS = 4
+
+# Order queues for each worker
+worker_queues = [queue.Queue() for _ in range(NUM_WORKERS)]
+worker_locks = [Lock() for _ in range(NUM_WORKERS)]
+
+
+def process_worker(worker_id):
+    """Function for each worker to process its assigned orders."""
     while True:
-        with lock:
-            if not order_queue.empty():
-                order = order_queue.get()
-                print(f"Processing order: {order}")
+        with worker_locks[worker_id]:
+            if not worker_queues[worker_id].empty():
+                order = worker_queues[worker_id].get()
+                print(f"Worker {worker_id} processing order: {order['id']}")
                 for item in order['items']:
-                    # Simulate Round Robin processing
+                    # Process each item in the order
                     for _ in range(item['quantity']):
                         time.sleep(processing_times[item['item']])
-                        print(f"Completed {item['item']} for Order {order['id']}")
-                print(f"Order {order['id']} completed.")
+                        print(f"Worker {worker_id} completed {item['item']} for Order {order['id']}")
+                print(f"Worker {worker_id} completed Order {order['id']}.")
 
-# Add order to queue
+
 def process_order(order_items):
+    """Add an order to the shared queue and assign to a worker."""
     order_id = int(time.time() * 1000)  # Unique ID based on timestamp
     order = {'id': order_id, 'items': order_items}
-    order_queue.put(order)
-    print(f"Order {order_id} received.")
-    return f"Order {order_id} is being processed."
+    
+    # Assign order to the next worker in a round-robin manner
+    with order_lock:
+        worker_id = order_queue.qsize() % NUM_WORKERS  # Round-robin assignment
+        worker_queues[worker_id].put(order)
+        order_queue.put(order)
+        print(f"Order {order_id} assigned to Worker {worker_id}.")
+    
+    return f"Order {order_id} is being processed by Worker {worker_id}."
 
-# Main function
 def main():
-    # Create server object
+    # Create RPC server
     server = SimpleXMLRPCServer(("localhost", 9000), allow_none=True)
     print("RPC Server is running on localhost:9000")
-
+    
     # Register functions
     server.register_function(process_order, "process_order")
-
+    
     # Start worker threads
-    for _ in range(4):
-        Thread(target=process_orders, daemon=True).start()
-
+    for i in range(NUM_WORKERS):
+        Thread(target=process_worker, args=(i,), daemon=True).start()
+    
     # Run the server's main loop
     server.serve_forever()
+
 
 if __name__ == "__main__":
     main()
