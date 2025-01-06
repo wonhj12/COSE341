@@ -40,46 +40,117 @@ NUM_WORKERS = 4
 worker_queues = [queue.Queue() for _ in range(NUM_WORKERS)]
 worker_locks = [Lock() for _ in range(NUM_WORKERS)]
 
+import time
+import queue
+from threading import Thread, Lock
+
+# Menu processing times (in seconds)
+processing_times = {
+    'Americano': 4,
+    'Latte': 6,
+    'Green Tea Latte': 6,
+    'Frappuccino': 10
+}
+
+inventory = {
+    'Coffee': 100,
+    'Milk': 50,
+    'Green_Tea': 20,
+    'Chocolate': 20,
+    'Cream': 15
+}
+
+recipes = {
+    'Americano': {'Coffee': 10},
+    'Latte': {'Coffee': 8, 'Milk': 5},
+    'Green Tea Latte': {'Green_Tea': 5, 'Milk': 4},
+    'Frappuccino': {'Chocolate': 5, 'Milk': 5, 'Cream': 3}
+}
+
+# Thread-safe order queues for each worker
+NUM_WORKERS = 4
+worker_queues = [queue.Queue() for _ in range(NUM_WORKERS)]
+worker_locks = [Lock() for _ in range(NUM_WORKERS)]
+
+# Lock to protect inventory
+inventory_lock = Lock()
+
+# Variable to assign orders in a round-robin manner
+current_worker_id = 0
+order_assign_lock = Lock()  # Lock to protect current_worker_id
 
 def process_worker(worker_id):
     """Function for each worker to process its assigned orders."""
     while True:
-        with worker_locks[worker_id]:
-            if not worker_queues[worker_id].empty():
-                order = worker_queues[worker_id].get()
-                print(f"Worker {worker_id} processing order: {order['id']}")
+        try:
+            # Wait for an order to be available
+            order = worker_queues[worker_id].get(timeout=1)  # Timeout to allow graceful exit
+        except queue.Empty:
+            continue  # No order to process, continue waiting
 
-                # Process each item in the order
-                for item in order['items']:
-                    drink_name = item['item']
-                    quantity = item['quantity']
+        print(f"Worker {worker_id} processing Order {order['id']}")
 
-                    for _ in range(quantity):
-                        # Check if we have enough ingredients for this drink
-                        can_make_drink = True
-                        with inventory_lock:
-                            for ingredient, required_amount in recipes[drink_name].items():
-                                if inventory[ingredient] < required_amount:
-                                    print(f"Sold Out! Not enough {ingredient} for {drink_name}")
-                                    can_make_drink = False
-                                    break
+        # Process each item in the order
+        for item in order['items']:
+            drink_name = item['item']
+            quantity = item['quantity']
 
-                            # If we can make the drink, reduce inventory
-                            if can_make_drink:
-                                for ingredient, required_amount in recipes[drink_name].items():
-                                    inventory[ingredient] -= required_amount
+            for _ in range(quantity):
+                # Attempt to make the drink
+                can_make_drink = False
 
-                        if can_make_drink:
-                            # Simulate drink preparation time
-                            time.sleep(processing_times[drink_name])
-                            print(f"Worker {worker_id} completed {drink_name} for Order {order['id']}")
-                        else:
-                            # Not enough inventory to make this drink; log and skip
+                with inventory_lock:
+                    # Check if enough ingredients are available
+                    can_make_drink = True
+                    for ingredient, required_amount in recipes[drink_name].items():
+                        if inventory.get(ingredient, 0) < required_amount:
+                            print(f"Sold Out! Not enough {ingredient} for {drink_name} in Order {order['id']}")
+                            can_make_drink = False
                             break
 
-                print(f"Worker {worker_id} completed Order {order['id']}.")
+                    if can_make_drink:
+                        # Deduct the ingredients from inventory
+                        for ingredient, required_amount in recipes[drink_name].items():
+                            inventory[ingredient] -= required_amount
+                        print(f"Ingredients reserved for {drink_name} in Order {order['id']}")
 
-current_worker_id = 0
+                if can_make_drink:
+                    # Simulate drink preparation time
+                    time.sleep(processing_times[drink_name])
+                    print(f"Worker {worker_id} completed {drink_name} for Order {order['id']}")
+                else:
+                    # Not enough inventory to make this drink; skip to next item
+                    break
+
+        print(f"Worker {worker_id} completed Order {order['id']}.")
+
+def assign_order(order_items):
+    """
+    Assign an order to a worker in a thread-safe manner using round-robin.
+    order_items example: [{'item': 'Americano', 'quantity': 2}, ...]
+    """
+    global current_worker_id
+
+    order_id = int(time.time() * 1000)
+    order = {'id': order_id, 'items': order_items}
+
+    with order_assign_lock:
+        worker_id = current_worker_id
+        current_worker_id = (current_worker_id + 1) % NUM_WORKERS
+        worker_queues[worker_id].put(order)
+        print(f"Order {order_id} assigned to Worker {worker_id}.")
+
+    return f"Order {order_id} is being processed by Worker {worker_id}."
+
+def start_workers():
+    """Initialize and start all worker threads."""
+    for worker_id in range(NUM_WORKERS):
+        thread = Thread(target=process_worker, args=(worker_id,), daemon=True)
+        thread.start()
+        print(f"Worker {worker_id} started.")
+
+# Initialize and start worker threads
+start_workers()
 
 def process_order(order_items):
     """
