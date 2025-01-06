@@ -26,6 +26,13 @@ recipes = {
     'Frappuccino':   {'Chocolate': 5, 'Milk': 5, 'Cream': 3}
 }
 
+prices = {
+    'Americano': 1500,
+    'Latte': 3000,
+    'Green Tea Latte': 4000,
+    'Frappuccino': 5000
+}
+
 # Thread-safe order queue
 order_queue = queue.Queue()
 order_lock = Lock()
@@ -79,8 +86,11 @@ inventory_lock = Lock()
 current_worker_id = 0
 order_assign_lock = Lock()  # Lock to protect current_worker_id
 
+profit = 0 # Total profit
+
 def process_worker(worker_id):
     """Function for each worker to process its assigned orders."""
+    global profit
     while True:
         try:
             # Wait for an order to be available
@@ -89,6 +99,7 @@ def process_worker(worker_id):
             continue  # No order to process, continue waiting
 
         print(f"Worker {worker_id} processing Order {order['id']}")
+        order_profit = 0 # Profit for this order
 
         # Process each item in the order
         for item in order['items']:
@@ -113,6 +124,7 @@ def process_worker(worker_id):
                         for ingredient, required_amount in recipes[drink_name].items():
                             inventory[ingredient] -= required_amount
                         print(f"Ingredients reserved for {drink_name} in Order {order['id']}")
+                        order_profit += prices[drink_name]
 
                 if can_make_drink:
                     # Simulate drink preparation time
@@ -121,8 +133,10 @@ def process_worker(worker_id):
                 else:
                     # Not enough inventory to make this drink; skip to next item
                     break
-
+        with order_lock:
+            profit += order_profit
         print(f"Worker {worker_id} completed Order {order['id']}.")
+        print(f"Total profit: {profit}")
 
 def assign_order(order_items):
     """
