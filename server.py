@@ -1,7 +1,55 @@
 from xmlrpc.server import SimpleXMLRPCServer
 from threading import Thread, Lock
+import queue
+import time
+
+# Menu processing times (in seconds)
+processing_times = {
+    'Americano': 4,
+    'Latte': 6,
+    'Green Tea Latte': 6,
+    'Frappuccino': 10
+}
+
+inventory = {
+    'Coffee': 100,
+    'Milk': 50,
+    'Green_Tea': 20,
+    'Chocolate': 20,
+    'Cream': 15
+}
+
+recipes = {
+    'Americano':     {'Coffee': 10},
+    'Latte':         {'Coffee': 8,  'Milk': 5},
+    'Green Tea Latte': {'Green_Tea': 5, 'Milk': 4},
+    'Frappuccino':   {'Chocolate': 5, 'Milk': 5, 'Cream': 3}
+}
+
+prices = {
+    'Americano': 1500,
+    'Latte': 3000,
+    'Green Tea Latte': 4000,
+    'Frappuccino': 5000
+}
+
+# Thread-safe order queue
+order_queue = queue.Queue()
+order_lock = Lock()
+
+# Lock to protect inventory
+inventory_lock = Lock()
+
+# Number of worker threads
+NUM_WORKERS = 4
+
+# Order queues for each worker
+worker_queues = [queue.Queue() for _ in range(NUM_WORKERS)]
+worker_locks = [Lock() for _ in range(NUM_WORKERS)]
+
 import time
 import queue
+from threading import Thread, Lock
 
 # Menu processing times (in seconds)
 processing_times = {
@@ -26,27 +74,13 @@ recipes = {
     'Frappuccino': {'Chocolate': 5, 'Milk': 5, 'Cream': 3}
 }
 
-
-prices = {
-    'Americano': 1500,
-    'Latte': 3000,
-    'Green Tea Latte': 4000,
-    'Frappuccino': 5000
-}
-
-# Thread-safe order queue
-order_queue = queue.Queue()
-order_lock = Lock()
+# Thread-safe order queues for each worker
+NUM_WORKERS = 4
+worker_queues = [queue.Queue() for _ in range(NUM_WORKERS)]
+worker_locks = [Lock() for _ in range(NUM_WORKERS)]
 
 # Lock to protect inventory
 inventory_lock = Lock()
-
-# Number of worker threads
-NUM_WORKERS = 4
-
-# Order queues for each worker
-worker_queues = [queue.Queue() for _ in range(NUM_WORKERS)]
-worker_locks = [Lock() for _ in range(NUM_WORKERS)]
 
 # Variable to assign orders in a round-robin manner
 current_worker_id = 0
